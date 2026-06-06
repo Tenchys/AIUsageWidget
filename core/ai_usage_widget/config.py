@@ -19,17 +19,6 @@ def save_config(config: dict):
         json.dump(config, f, indent=2)
 
 
-def get_openai_key() -> str:
-    config = load_config()
-    return config.get("openai_admin_key", "") or os.environ.get("OPENAI_ADMIN_KEY", "")
-
-
-def set_openai_key(key: str):
-    config = load_config()
-    config["openai_admin_key"] = key
-    save_config(config)
-
-
 def get_subscription_start() -> float | None:
     config = load_config()
     return config.get("subscription_start")

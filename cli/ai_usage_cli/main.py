@@ -5,15 +5,14 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from core.ai_usage_widget.providers import opencode, openai
-from core.ai_usage_widget.config import get_openai_key, set_openai_key
+from core.ai_usage_widget.providers import opencode, chatgpt
 from cli.ai_usage_cli.display import show_status, show_models
 
 
 def cmd_status():
     data = {
         "opencode_go": opencode.get_usage(),
-        "openai": openai.get_usage(get_openai_key()),
+        "chatgpt": chatgpt.get_usage(),
     }
     show_status(data)
 
@@ -21,7 +20,6 @@ def cmd_status():
 def cmd_models():
     data = {
         "opencode_go": opencode.get_usage(),
-        "openai": {},
     }
     show_models(data)
 
@@ -99,20 +97,6 @@ def cmd_reset():
     print("Cookies y calibracion eliminadas. Volviendo a modo local.")
 
 
-def cmd_config(args: list[str]):
-    if not args:
-        print("Uso: ai-usage config --openai-admin-key KEY")
-        return
-    if args[0] == "--openai-admin-key":
-        if len(args) < 2:
-            print("Debes proporcionar la key")
-            return
-        set_openai_key(args[1])
-        print("OpenAI Admin Key guardada en ~/.config/ai-usage/config.json")
-    else:
-        print(f"Opcion desconocida: {args[0]}")
-
-
 def main():
     args = sys.argv[1:]
 
@@ -126,8 +110,6 @@ def main():
         cmd_setup()
     elif args[0] == "reset":
         cmd_reset()
-    elif args[0] == "config":
-        cmd_config(args[1:])
     elif args[0] in ("-h", "--help"):
         print("AI Usage Widget")
         print()
@@ -136,7 +118,6 @@ def main():
         print("  ai-usage models        Desglose por modelo")
         print("  ai-usage setup         Sincronizar con la web de OpenCode Go")
         print("  ai-usage reset         Volver a modo local (sin web)")
-        print("  ai-usage config --openai-admin-key KEY   Configurar key de OpenAI")
     else:
         print(f"Comando desconocido: {args[0]}")
         print("Usa ai-usage --help para ayuda")

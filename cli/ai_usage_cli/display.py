@@ -53,14 +53,35 @@ def show_status(data: dict):
             print(f"  \033[90m(Ejecuta 'ai-usage setup' para sincronizar con la web)\033[0m")
 
     print()
-    _print_header("OpenAI Codex")
-    oa = data.get("openai", {})
-    if oa.get("error"):
-        print(f"  \033[91m{oa['error']}\033[0m")
+    _print_header("ChatGPT Plus")
+    cg = data.get("chatgpt", {})
+    if cg.get("error"):
+        print(f"  \033[91m{cg['error']}\033[0m")
     else:
-        print(f"  Costo hoy:     ${oa.get('cost_today', 0):,.4f}")
-        print(f"  Costo semana:  ${oa.get('cost_week', 0):,.4f}")
-        print(f"  Costo mes:     ${oa.get('cost_month', 0):,.4f}")
+        plan_name = cg.get("plan_name", "")
+        plan_cost = cg.get("plan_cost")
+        cost_str = f"(${plan_cost}/mes)" if plan_cost is not None else "(costo N/A)"
+        status_color = "\033[92m" if cg.get("allowed", True) else "\033[91m"
+        status_text = "Activo" if cg.get("allowed", True) else "Limitado"
+        print(f"  Plan: {plan_name} {cost_str}  {status_color}[{status_text}]\033[0m")
+        for w in cg.get("windows", []):
+            name = w["name"]
+            percent = w["used_percent"]
+            reset_after = w["reset_after_seconds"]
+            label = {"5h": "5 horas", "weekly": "Semanal"}.get(name, name)
+            time_left = _fmt_seconds(reset_after)
+            print(f"  {label:<10} [{_bar(percent)}] {percent:5.1f}%  reset en {time_left}")
+
+        credits = cg.get("credits", {})
+        if credits.get("has_credits"):
+            approx_cloud = credits.get("approx_cloud")
+            if approx_cloud and len(approx_cloud) == 2:
+                print(f"  Mensajes cloud: {approx_cloud[0]} / {approx_cloud[1]}")
+            if credits.get("balance") and credits["balance"] != "0":
+                print(f"  Balance: ${credits['balance']}")
+
+        if cg.get("limit_reached"):
+            print(f"  \033[91mL\u00edmite alcanzado\033[0m")
     print()
 
 
@@ -77,6 +98,19 @@ def show_models(data: dict):
     for model, stats in sorted(models.items(), key=lambda x: x[1]["cost"], reverse=True):
         print(f"  {model:<25} {stats['sessions']:>8} {stats['tokens_input']:>12,} {stats['tokens_output']:>12,} ${stats['cost']:>9.4f}")
     print()
+
+
+def _fmt_seconds(seconds: int) -> str:
+    if seconds <= 0:
+        return "ahora"
+    days = seconds // 86400
+    hours = (seconds % 86400) // 3600
+    minutes = (seconds % 3600) // 60
+    if days > 0:
+        return f"{days}d {hours}h"
+    if hours > 0:
+        return f"{hours}h {minutes}m"
+    return f"{minutes}m"
 
 
 def _print_header(title: str):
