@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-usage-widget"
+version = "0.1.0"
+description = "Track AI usage from OpenCode Go and OpenAI subscriptions"
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+scraper = ["browser-cookie3"]
+
+[project.scripts]
+ai-usage = "ai_usage_cli.main:main"
+
+[tool.setuptools.packages.find]
+where = ["core", "cli", "scraper"]
