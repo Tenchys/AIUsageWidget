@@ -5,6 +5,7 @@ import urllib.request
 import urllib.parse
 import urllib.error
 import os
+from core.ai_usage_widget._platform import get_user_agent
 
 AUTH_PATH = os.path.expanduser("~/.codex/auth.json")
 USAGE_URL = "https://chatgpt.com/backend-api/wham/usage"
@@ -99,10 +100,7 @@ def _fetch_usage(access_token: str, account_id: str) -> dict:
     req.add_header("Authorization", f"Bearer {access_token}")
     req.add_header("ChatGPT-Account-Id", account_id)
     req.add_header("Accept", "application/json")
-    req.add_header(
-        "User-Agent",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-    )
+    req.add_header("User-Agent", get_user_agent())
     req.add_header("Origin", "https://chatgpt.com")
 
     try:

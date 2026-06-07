@@ -5,6 +5,7 @@ import json
 import urllib.request
 import urllib.error
 from dataclasses import dataclass
+from core.ai_usage_widget._platform import get_user_agent
 
 
 @dataclass
@@ -57,7 +58,7 @@ def _fetch_go_page(cookie_header: str) -> str | None:
     )
 
     req = urllib.request.Request("https://opencode.ai/auth")
-    req.add_header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36")
+    req.add_header("User-Agent", get_user_agent())
     req.add_header("Accept", "text/html,application/xhtml+xml")
 
     try:
@@ -157,7 +158,7 @@ def _call_server_function(cookie_header: str, server_id: str, workspace_id: str)
     req.add_header("Content-Type", "application/json")
     req.add_header("X-Server-Id", server_id)
     req.add_header("X-Server-Instance", "server-fn:0")
-    req.add_header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36")
+    req.add_header("User-Agent", get_user_agent())
     req.data = body.encode()
 
     try:
