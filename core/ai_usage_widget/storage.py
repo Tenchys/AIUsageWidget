@@ -3,14 +3,16 @@
 import sqlite3
 import json
 import os
+from core.ai_usage_widget._platform import get_data_dir
 
 
 def get_opencode_db_path() -> str:
-    share_dir = os.path.expanduser("~/.local/share/opencode")
-    db_path = os.path.join(share_dir, "opencode.db")
-    if os.path.exists(db_path):
-        return db_path
-    return db_path
+    opencode_db = os.environ.get("OPENCODE_DB")
+    if opencode_db:
+        if opencode_db == ":memory:" or os.path.isabs(opencode_db):
+            return opencode_db
+        return os.path.join(get_data_dir(), "opencode", opencode_db)
+    return os.path.join(get_data_dir(), "opencode", "opencode.db")
 
 
 def _parse_model(raw: str | None) -> dict:

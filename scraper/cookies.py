@@ -3,9 +3,11 @@
 import os
 import json
 import time
+import platform
 import http.cookiejar
+from core.ai_usage_widget._platform import get_config_dir
 
-COOKIES_PATH = os.path.expanduser("~/.config/ai-usage/cookies.json")
+COOKIES_PATH = os.path.join(get_config_dir(), "cookies.json")
 
 
 def _cookie_entry(name: str, value: str, expires: int | None) -> dict[str, str | int | None]:
@@ -21,11 +23,13 @@ def _load_from_browser() -> list[dict[str, str | int | None]] | None:
     browsers = [
         ("chrome", browser_cookie3.chrome),
         ("firefox", browser_cookie3.firefox),
-        ("safari", browser_cookie3.safari),
         ("brave", browser_cookie3.brave),
         ("edge", browser_cookie3.edge),
         ("chromium", browser_cookie3.chromium),
     ]
+
+    if platform.system() != "Linux":
+        browsers.insert(0, ("safari", browser_cookie3.safari))
 
     for name, loader in browsers:
         try:
