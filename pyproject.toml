@@ -10,9 +10,22 @@ requires-python = ">=3.10"
 
 [project.optional-dependencies]
 scraper = ["browser-cookie3"]
+test = ["pytest>=7", "pytest-cov>=4", "pytest-mock>=3"]
 
 [project.scripts]
-ai-usage = "ai_usage_cli.main:main"
+ai-usage = "cli.ai_usage_cli.main:main"
 
 [tool.setuptools.packages.find]
-where = ["core", "cli", "scraper"]
+where = ["."]
+exclude = ["tests*", "investigacion*", ".venv*", "ai_usage_widget.egg-info*"]
+
+[tool.ruff]
+target-version = "py310"
+exclude = ["build/", "dist/", "*.egg-info/", ".git/"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov --cov-report=term-missing"

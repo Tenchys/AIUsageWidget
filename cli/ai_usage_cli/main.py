@@ -1,12 +1,9 @@
 # cli/ai_usage_cli/main.py
 
 import sys
-import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
-from core.ai_usage_widget.providers import opencode, chatgpt
-from cli.ai_usage_cli.display import show_status, show_models
+from cli.ai_usage_cli.display import show_models, show_status
+from core.ai_usage_widget.providers import chatgpt, opencode
 
 
 def cmd_status():
@@ -30,7 +27,10 @@ def cmd_setup():
 
     cookie_entries = _try_auto_cookies()
     if cookie_entries:
-        print(f"  \033[92mCookies detectadas automaticamente ({len(cookie_entries)} cookies)\033[0m")
+        print(
+            f"  \033[92mCookies detectadas automaticamente "
+            f"({len(cookie_entries)} cookies)\033[0m"
+        )
     else:
         print("  No se pudieron detectar cookies automaticamente.")
         print()
@@ -51,7 +51,8 @@ def cmd_setup():
                 k, v = part.split("=", 1)
                 cookies[k.strip()] = v.strip()
 
-    from scraper.cookies import save_cookies, save_cookie_entries, cookies_to_header
+    from scraper.cookies import cookies_to_header, save_cookie_entries, save_cookies
+
     if cookie_entries:
         save_cookie_entries(cookie_entries)
         cookies = {item["name"]: str(item["value"]) for item in cookie_entries}
@@ -62,36 +63,52 @@ def cmd_setup():
     print("  Verificando conexion con OpenCode Go...")
 
     from scraper.opencode_go import fetch_go_usage
+
     header = cookies_to_header(cookies)
     data = fetch_go_usage(header)
 
     if data:
-        print(f"  \033[92mConexion exitosa!\033[0m")
-        print(f"    5 horas:  {data.five_hour_pct}% (reset en {data.five_hour_reset_seconds}s)")
-        print(f"    Semanal:  {data.weekly_pct}% (reset en {data.weekly_reset_seconds}s)")
-        print(f"    Mensual:  {data.monthly_pct}% (reset en {data.monthly_reset_seconds}s)")
+        print("  \033[92mConexion exitosa!\033[0m")
+        print(
+            f"    5 horas:  {data.five_hour_pct}% "
+            f"(reset en {data.five_hour_reset_seconds}s)"
+        )
+        print(
+            f"    Semanal:  {data.weekly_pct}% (reset en {data.weekly_reset_seconds}s)"
+        )
+        print(
+            f"    Mensual:  {data.monthly_pct}% "
+            f"(reset en {data.monthly_reset_seconds}s)"
+        )
         import time
+
         from core.ai_usage_widget.config import set_subscription_start
+
         sub_start = time.time() + data.monthly_reset_seconds - 30 * 86400
         set_subscription_start(sub_start)
         print()
         print("  \033[92mListo! Ahora 'ai-usage' mostrara datos de la web.\033[0m")
     else:
         print("  \033[91mNo se pudo obtener datos de la web.\033[0m")
-        print("  Verifica que las cookies sean validas y que estes logueado en opencode.ai")
+        print(
+            "  Verifica que las cookies sean validas y que estes "
+            "logueado en opencode.ai"
+        )
 
 
 def _try_auto_cookies() -> list[dict[str, str | int | None]] | None:
     try:
         from scraper.cookies import _load_from_browser
+
         return _load_from_browser()
     except Exception:
         return None
 
 
 def cmd_reset():
-    from scraper.cookies import clear_cookies
     from core.ai_usage_widget.config import set_subscription_start
+    from scraper.cookies import clear_cookies
+
     clear_cookies()
     set_subscription_start(0)
     print("Cookies y calibracion eliminadas. Volviendo a modo local.")

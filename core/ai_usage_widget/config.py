@@ -1,7 +1,8 @@
 # core/ai_usage_widget/config.py
 
-import os
 import json
+import os
+
 from core.ai_usage_widget._platform import get_config_dir
 
 CONFIG_PATH = os.path.join(get_config_dir(), "config.json")

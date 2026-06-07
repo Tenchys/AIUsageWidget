@@ -2,6 +2,7 @@
 
 import time
 from dataclasses import dataclass
+
 from .pricing.opencode_go import LIMITS, WINDOW_SECONDS
 
 
@@ -15,7 +16,11 @@ class WindowStatus:
     percent: float
 
 
-def get_windows(usage_sessions: list[dict], now: float | None = None, subscription_start: float | None = None) -> list[WindowStatus]:
+def get_windows(
+    usage_sessions: list[dict],
+    now: float | None = None,
+    subscription_start: float | None = None,
+) -> list[WindowStatus]:
     if now is None:
         now = time.time()
 
@@ -45,14 +50,16 @@ def get_windows(usage_sessions: list[dict], now: float | None = None, subscripti
         else:
             reset_at = now
 
-        windows.append(WindowStatus(
-            name=name,
-            limit=limit,
-            used=round(used, 2),
-            remaining=round(remaining, 2),
-            reset_at=reset_at,
-            percent=round(min(percent, 100), 1),
-        ))
+        windows.append(
+            WindowStatus(
+                name=name,
+                limit=limit,
+                used=round(used, 2),
+                remaining=round(remaining, 2),
+                reset_at=reset_at,
+                percent=round(min(percent, 100), 1),
+            )
+        )
 
     return windows
 
@@ -72,5 +79,6 @@ def get_reset_time_remaining(reset_at: float, now: float | None = None) -> str:
 
 def format_reset_time(reset_at: float, now: float | None = None) -> str:
     import datetime
+
     dt = datetime.datetime.fromtimestamp(reset_at)
     return dt.strftime("%d/%m %H:%M")

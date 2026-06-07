@@ -1,16 +1,18 @@
 # scraper/cookies.py
 
-import os
 import json
-import time
+import os
 import platform
-import http.cookiejar
+import time
+
 from core.ai_usage_widget._platform import get_config_dir
 
 COOKIES_PATH = os.path.join(get_config_dir(), "cookies.json")
 
 
-def _cookie_entry(name: str, value: str, expires: int | None) -> dict[str, str | int | None]:
+def _cookie_entry(
+    name: str, value: str, expires: int | None
+) -> dict[str, str | int | None]:
     return {"name": name, "value": value, "expires": expires}
 
 
@@ -37,7 +39,9 @@ def _load_from_browser() -> list[dict[str, str | int | None]] | None:
             cookies = []
             for cookie in cj:
                 if cookie.domain and "opencode.ai" in cookie.domain:
-                    cookies.append(_cookie_entry(cookie.name, cookie.value, cookie.expires))
+                    cookies.append(
+                        _cookie_entry(cookie.name, cookie.value, cookie.expires)
+                    )
             if cookies:
                 return cookies
         except Exception:
@@ -79,10 +83,9 @@ def _load_saved() -> dict[str, str] | None:
 
 
 def save_cookies(cookies: dict[str, str]):
-    save_cookie_entries([
-        _cookie_entry(name, value, None)
-        for name, value in cookies.items()
-    ])
+    save_cookie_entries(
+        [_cookie_entry(name, value, None) for name, value in cookies.items()]
+    )
 
 
 def save_cookie_entries(cookies: list[dict[str, str | int | None]]):
@@ -118,8 +121,7 @@ def get_saved_expiry() -> int | None:
     if not entries:
         return None
     expires_values = [
-        e.get("expires") for e in entries
-        if isinstance(e.get("expires"), (int, float))
+        e.get("expires") for e in entries if isinstance(e.get("expires"), (int, float))
     ]
     if not expires_values:
         return None
@@ -136,5 +138,6 @@ def format_expiry_date(expires: int | None) -> str | None:
     if expires is None:
         return None
     import datetime
+
     dt = datetime.datetime.fromtimestamp(expires)
     return dt.strftime("%d/%m/%Y %H:%M")

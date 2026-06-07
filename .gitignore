@@ -2,3 +2,11 @@
 *.egg-info/
 __pycache__/
 *.pyc
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+dist/
+*.egg
+build/
+.pytest_cache/

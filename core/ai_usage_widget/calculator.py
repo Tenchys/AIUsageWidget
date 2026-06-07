@@ -1,7 +1,6 @@
 # core/ai_usage_widget/calculator.py
 
-from decimal import Decimal, ROUND_HALF_UP
-from .pricing import opencode_go, openai
+from .pricing import openai, opencode_go
 
 
 def _get_price(provider: str, model: str, token_type: str) -> float:
@@ -55,7 +54,9 @@ def calculate_cost(
     cost += (tokens_output / 1_000_000) * _get_price(provider, model, "output")
     cost += (tokens_reasoning / 1_000_000) * _get_price(provider, model, "reasoning")
     cost += (tokens_cache_read / 1_000_000) * _get_price(provider, model, "cached_read")
-    cost += (tokens_cache_write / 1_000_000) * _get_price(provider, model, "cached_write")
+    cost += (tokens_cache_write / 1_000_000) * _get_price(
+        provider, model, "cached_write"
+    )
     return round(cost, 6)
 
 

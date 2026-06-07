@@ -1,7 +1,6 @@
 # cli/ai_usage_cli/display.py
 
-import sys
-from core.ai_usage_widget.windows import WindowStatus, get_reset_time_remaining
+from core.ai_usage_widget.windows import get_reset_time_remaining
 
 
 def _bar(percent: float, width: int = 20) -> str:
@@ -37,20 +36,29 @@ def show_status(data: dict):
             name = w.name
             limit = w.limit
             used = w.used
-            remaining = w.remaining
             percent = w.percent
             time_left = get_reset_time_remaining(w.reset_at)
 
             if isinstance(name, str):
-                label = {"5h": "5 horas", "weekly": "Semanal", "monthly": "Mensual"}.get(name, name)
+                label = {
+                    "5h": "5 horas",
+                    "weekly": "Semanal",
+                    "monthly": "Mensual",
+                }.get(name, name)
             else:
                 label = str(name)
 
-            print(f"  {label:<10} ${used:<8.2f} / ${limit:<8.2f} [{_bar(percent)}] {percent:5.1f}%  reset en {time_left}")
+            print(
+                f"  {label:<10} ${used:<8.2f} / ${limit:<8.2f} "
+                f"[{_bar(percent)}] {percent:5.1f}%  reset en {time_left}"
+            )
 
         if source != "web":
             print()
-            print(f"  \033[90m(Ejecuta 'ai-usage setup' para sincronizar con la web)\033[0m")
+            print(
+                "  \033[90m(Ejecuta 'ai-usage setup' para sincronizar "
+                "con la web)\033[0m"
+            )
 
     print()
     _print_header("ChatGPT Plus")
@@ -70,7 +78,9 @@ def show_status(data: dict):
             reset_after = w["reset_after_seconds"]
             label = {"5h": "5 horas", "weekly": "Semanal"}.get(name, name)
             time_left = _fmt_seconds(reset_after)
-            print(f"  {label:<10} [{_bar(percent)}] {percent:5.1f}%  reset en {time_left}")
+            print(
+                f"  {label:<10} [{_bar(percent)}] {percent:5.1f}%  reset en {time_left}"
+            )
 
         credits = cg.get("credits", {})
         if credits.get("has_credits"):
@@ -81,7 +91,7 @@ def show_status(data: dict):
                 print(f"  Balance: ${credits['balance']}")
 
         if cg.get("limit_reached"):
-            print(f"  \033[91mL\u00edmite alcanzado\033[0m")
+            print("  \033[91mL\u00edmite alcanzado\033[0m")
     print()
 
 
@@ -93,10 +103,19 @@ def show_models(data: dict):
         print("  Sin datos")
         return
 
-    print(f"  {'Modelo':<25} {'Sesiones':>8} {'In tokens':>12} {'Out tokens':>12} {'Costo':>10}")
-    print(f"  {'-'*25} {'-'*8} {'-'*12} {'-'*12} {'-'*10}")
-    for model, stats in sorted(models.items(), key=lambda x: x[1]["cost"], reverse=True):
-        print(f"  {model:<25} {stats['sessions']:>8} {stats['tokens_input']:>12,} {stats['tokens_output']:>12,} ${stats['cost']:>9.4f}")
+    print(
+        f"  {'Modelo':<25} {'Sesiones':>8} {'In tokens':>12} "
+        f"{'Out tokens':>12} {'Costo':>10}"
+    )
+    print(f"  {'-' * 25} {'-' * 8} {'-' * 12} {'-' * 12} {'-' * 10}")
+    for model, stats in sorted(
+        models.items(), key=lambda x: x[1]["cost"], reverse=True
+    ):
+        print(
+            f"  {model:<25} {stats['sessions']:>8} "
+            f"{stats['tokens_input']:>12,} {stats['tokens_output']:>12,} "
+            f"${stats['cost']:>9.4f}"
+        )
     print()
 
 

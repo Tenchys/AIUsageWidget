@@ -1,10 +1,11 @@
-import json
-import time
 import base64
-import urllib.request
-import urllib.parse
-import urllib.error
+import json
 import os
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+
 from core.ai_usage_widget._platform import get_user_agent
 
 AUTH_PATH = os.path.expanduser("~/.codex/auth.json")
@@ -17,7 +18,10 @@ def get_usage() -> dict:
         if not os.path.exists(AUTH_PATH):
             return {
                 "provider": "chatgpt",
-                "error": "No se encontr\u00f3 ~/.codex/auth.json. Necesitas iniciar sesi\u00f3n en Codex primero.",
+                "error": (
+                    "No se encontr\u00f3 ~/.codex/auth.json. "
+                    "Necesitas iniciar sesi\u00f3n en Codex primero."
+                ),
             }
 
         auth = _load_auth()
@@ -70,11 +74,13 @@ def _get_valid_token(auth: dict) -> str:
     payload = _decode_jwt(access_token)
     client_id = payload.get("client_id")
 
-    data = urllib.parse.urlencode({
-        "grant_type": "refresh_token",
-        "client_id": client_id,
-        "refresh_token": refresh_token,
-    }).encode()
+    data = urllib.parse.urlencode(
+        {
+            "grant_type": "refresh_token",
+            "client_id": client_id,
+            "refresh_token": refresh_token,
+        }
+    ).encode()
 
     req = urllib.request.Request(TOKEN_URL, data=data)
     req.add_header("Content-Type", "application/x-www-form-urlencoded")
@@ -86,9 +92,7 @@ def _get_valid_token(auth: dict) -> str:
             auth["tokens"]["access_token"] = result["access_token"]
             if "refresh_token" in result:
                 auth["tokens"]["refresh_token"] = result["refresh_token"]
-            auth["last_refresh"] = time.strftime(
-                "%Y-%m-%dT%H:%M:%SZ", time.gmtime()
-            )
+            auth["last_refresh"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
             _save_auth(auth)
             return result["access_token"]
     except Exception as e:
@@ -123,21 +127,25 @@ def _parse_usage(data: dict) -> dict:
     windows = []
     if primary:
         is_5h = primary.get("limit_window_seconds") == 18000
-        windows.append({
-            "name": "5h" if is_5h else "primary",
-            "used_percent": primary.get("used_percent", 0),
-            "limit_window": primary.get("limit_window_seconds", 0),
-            "reset_after_seconds": primary.get("reset_after_seconds", 0),
-            "reset_at": primary.get("reset_at", 0),
-        })
+        windows.append(
+            {
+                "name": "5h" if is_5h else "primary",
+                "used_percent": primary.get("used_percent", 0),
+                "limit_window": primary.get("limit_window_seconds", 0),
+                "reset_after_seconds": primary.get("reset_after_seconds", 0),
+                "reset_at": primary.get("reset_at", 0),
+            }
+        )
     if secondary:
-        windows.append({
-            "name": "weekly",
-            "used_percent": secondary.get("used_percent", 0),
-            "limit_window": secondary.get("limit_window_seconds", 0),
-            "reset_after_seconds": secondary.get("reset_after_seconds", 0),
-            "reset_at": secondary.get("reset_at", 0),
-        })
+        windows.append(
+            {
+                "name": "weekly",
+                "used_percent": secondary.get("used_percent", 0),
+                "limit_window": secondary.get("limit_window_seconds", 0),
+                "reset_after_seconds": secondary.get("reset_after_seconds", 0),
+                "reset_at": secondary.get("reset_at", 0),
+            }
+        )
 
     credits = data.get("credits", {})
 

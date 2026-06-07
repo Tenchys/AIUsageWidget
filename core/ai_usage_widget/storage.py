@@ -1,8 +1,9 @@
 # core/ai_usage_widget/storage.py
 
-import sqlite3
 import json
 import os
+import sqlite3
+
 from core.ai_usage_widget._platform import get_data_dir
 
 
@@ -55,19 +56,21 @@ def fetch_opencode_sessions(db_path: str | None = None) -> list[dict]:
     sessions = []
     for row in cursor.fetchall():
         model_info = _parse_model(row["model"])
-        sessions.append({
-            "id": row["id"],
-            "model": row["model"] or "unknown",
-            "model_id": model_info["id"],
-            "provider": model_info["provider"],
-            "tokens_input": row["tokens_input"] or 0,
-            "tokens_output": row["tokens_output"] or 0,
-            "tokens_reasoning": row["tokens_reasoning"] or 0,
-            "tokens_cache_read": row["tokens_cache_read"] or 0,
-            "tokens_cache_write": row["tokens_cache_write"] or 0,
-            "cost": row["cost"] or 0,
-            "timestamp": _parse_timestamp(row["time_updated"]),
-        })
+        sessions.append(
+            {
+                "id": row["id"],
+                "model": row["model"] or "unknown",
+                "model_id": model_info["id"],
+                "provider": model_info["provider"],
+                "tokens_input": row["tokens_input"] or 0,
+                "tokens_output": row["tokens_output"] or 0,
+                "tokens_reasoning": row["tokens_reasoning"] or 0,
+                "tokens_cache_read": row["tokens_cache_read"] or 0,
+                "tokens_cache_write": row["tokens_cache_write"] or 0,
+                "cost": row["cost"] or 0,
+                "timestamp": _parse_timestamp(row["time_updated"]),
+            }
+        )
 
     conn.close()
     return sessions
@@ -83,6 +86,7 @@ def _parse_timestamp(val) -> float:
         return ts
     try:
         from datetime import datetime
+
         for fmt in ["%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"]:
             try:
                 return datetime.strptime(val, fmt).timestamp()

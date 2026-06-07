@@ -1,11 +1,13 @@
 # core/ai_usage_widget/providers/opencode.py
 
 import time
-from ..storage import fetch_opencode_sessions
-from ..windows import get_windows, WindowStatus
-from ..pricing.opencode_go import LIMITS
-from ..config import get_subscription_start, set_subscription_start
+
 from scraper.errors import CookieExpiredError
+
+from ..config import get_subscription_start, set_subscription_start
+from ..pricing.opencode_go import LIMITS
+from ..storage import fetch_opencode_sessions
+from ..windows import WindowStatus, get_windows
 
 
 def get_usage() -> dict:
@@ -38,7 +40,9 @@ def get_usage() -> dict:
                 name="5h",
                 limit=LIMITS["5h"],
                 used=round(server_data.five_hour_pct / 100 * LIMITS["5h"], 2),
-                remaining=round(LIMITS["5h"] * (1 - server_data.five_hour_pct / 100), 2),
+                remaining=round(
+                    LIMITS["5h"] * (1 - server_data.five_hour_pct / 100), 2
+                ),
                 reset_at=now + server_data.five_hour_reset_seconds,
                 percent=server_data.five_hour_pct,
             ),
@@ -46,7 +50,9 @@ def get_usage() -> dict:
                 name="weekly",
                 limit=LIMITS["weekly"],
                 used=round(server_data.weekly_pct / 100 * LIMITS["weekly"], 2),
-                remaining=round(LIMITS["weekly"] * (1 - server_data.weekly_pct / 100), 2),
+                remaining=round(
+                    LIMITS["weekly"] * (1 - server_data.weekly_pct / 100), 2
+                ),
                 reset_at=now + server_data.weekly_reset_seconds,
                 percent=server_data.weekly_pct,
             ),
@@ -54,7 +60,9 @@ def get_usage() -> dict:
                 name="monthly",
                 limit=LIMITS["monthly"],
                 used=round(server_data.monthly_pct / 100 * LIMITS["monthly"], 2),
-                remaining=round(LIMITS["monthly"] * (1 - server_data.monthly_pct / 100), 2),
+                remaining=round(
+                    LIMITS["monthly"] * (1 - server_data.monthly_pct / 100), 2
+                ),
                 reset_at=now + server_data.monthly_reset_seconds,
                 percent=server_data.monthly_pct,
             ),
@@ -68,7 +76,8 @@ def get_usage() -> dict:
         else:
             windows = get_windows(go_sessions)
 
-    from scraper.cookies import get_saved_expiry, format_expiry_date
+    from scraper.cookies import format_expiry_date, get_saved_expiry
+
     cookie_expiry = format_expiry_date(get_saved_expiry())
 
     models_used: dict[str, dict] = {}
@@ -99,9 +108,15 @@ def get_usage() -> dict:
 
 def _try_scraper():
     try:
-        from scraper.cookies import get_cookies, cookies_to_header, get_saved_expiry, is_expired, format_expiry_date
-        from scraper.opencode_go import fetch_go_usage
+        from scraper.cookies import (
+            cookies_to_header,
+            format_expiry_date,
+            get_cookies,
+            get_saved_expiry,
+            is_expired,
+        )
         from scraper.errors import CookieExpiredError
+        from scraper.opencode_go import fetch_go_usage
 
         expiry = get_saved_expiry()
         if is_expired(expiry):

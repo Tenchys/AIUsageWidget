@@ -1,10 +1,11 @@
 # scraper/opencode_go.py
 
-import re
 import json
-import urllib.request
+import re
 import urllib.error
+import urllib.request
 from dataclasses import dataclass
+
 from core.ai_usage_widget._platform import get_user_agent
 
 
@@ -38,19 +39,32 @@ def fetch_go_usage(cookie_header: str) -> GoUsageData | None:
 
 def _fetch_go_page(cookie_header: str) -> str | None:
     from http.cookiejar import Cookie, CookieJar
-    from urllib.parse import urlparse
 
     cj = CookieJar()
     for item in cookie_header.split(";"):
         item = item.strip()
         if "=" in item:
             name, value = item.split("=", 1)
-            cj.set_cookie(Cookie(
-                version=0, name=name, value=value, port=None, port_specified=False,
-                domain="opencode.ai", domain_specified=True, domain_initial_dot=False,
-                path="/", path_specified=True, secure=True, expires=None,
-                discard=False, comment=None, comment_url=None, rest={},
-            ))
+            cj.set_cookie(
+                Cookie(
+                    version=0,
+                    name=name,
+                    value=value,
+                    port=None,
+                    port_specified=False,
+                    domain="opencode.ai",
+                    domain_specified=True,
+                    domain_initial_dot=False,
+                    path="/",
+                    path_specified=True,
+                    secure=True,
+                    expires=None,
+                    discard=False,
+                    comment=None,
+                    comment_url=None,
+                    rest={},
+                )
+            )
 
     opener = urllib.request.build_opener(
         urllib.request.HTTPCookieProcessor(cj),
@@ -67,7 +81,7 @@ def _fetch_go_page(cookie_header: str) -> str | None:
         body = resp.read().decode("utf-8", errors="replace")
 
         if "/workspace/" not in final_url:
-            workspace_match = re.search(r'/workspace/(wrk_[a-zA-Z0-9]+)', body)
+            workspace_match = re.search(r"/workspace/(wrk_[a-zA-Z0-9]+)", body)
             if workspace_match:
                 wid = workspace_match.group(1)
                 go_url = f"https://opencode.ai/workspace/{wid}/go"
@@ -84,7 +98,7 @@ def _fetch_go_page(cookie_header: str) -> str | None:
 
         return body
 
-    except Exception as e:
+    except Exception:
         return None
 
 
@@ -108,7 +122,7 @@ def _extract_from_html(html: str) -> GoUsageData | None:
 
 
 def _extract_usage(html: str, key: str) -> tuple[int, float] | None:
-    pattern = rf'{key}[^}}]*resetInSec:(\d+),usagePercent:(\d+)'
+    pattern = rf"{key}[^}}]*resetInSec:(\d+),usagePercent:(\d+)"
     m = re.search(pattern, html)
     if m:
         return int(m.group(1)), float(m.group(2))
@@ -119,17 +133,17 @@ def _extract_workspace_id(html: str) -> str | None:
     match = re.search(r'"workspace","id":"(wrk_[a-zA-Z0-9]+)"', html)
     if match:
         return match.group(1)
-    match = re.search(r'/(workspace)/(wrk_[a-zA-Z0-9]+)', html)
+    match = re.search(r"/(workspace)/(wrk_[a-zA-Z0-9]+)", html)
     if match:
         return match.group(2)
-    match = re.search(r'wrk_[a-zA-Z0-9]+', html)
+    match = re.search(r"wrk_[a-zA-Z0-9]+", html)
     return match.group(0) if match else None
 
 
 def _extract_server_function_id(html: str) -> str | None:
     patterns = [
-        r'/_server\?id=([a-f0-9]{64})',
-        r'_server\?id=([a-f0-9]{64})',
+        r"/_server\?id=([a-f0-9]{64})",
+        r"_server\?id=([a-f0-9]{64})",
         r'"([a-f0-9]{64})"',
     ]
     for p in patterns:
@@ -139,19 +153,23 @@ def _extract_server_function_id(html: str) -> str | None:
     return None
 
 
-def _call_server_function(cookie_header: str, server_id: str, workspace_id: str) -> GoUsageData | None:
-    url = f"https://opencode.ai/_server"
-    body = json.dumps({
-        "t": {
-            "t": 9,
-            "i": 0,
-            "l": 1,
-            "a": [{"t": 1, "s": workspace_id}],
-            "o": 0,
-        },
-        "f": 31,
-        "m": [],
-    })
+def _call_server_function(
+    cookie_header: str, server_id: str, workspace_id: str
+) -> GoUsageData | None:
+    url = "https://opencode.ai/_server"
+    body = json.dumps(
+        {
+            "t": {
+                "t": 9,
+                "i": 0,
+                "l": 1,
+                "a": [{"t": 1, "s": workspace_id}],
+                "o": 0,
+            },
+            "f": 31,
+            "m": [],
+        }
+    )
 
     req = urllib.request.Request(url)
     req.add_header("Cookie", cookie_header)
@@ -176,7 +194,6 @@ def _parse_server_response(data: dict) -> GoUsageData | None:
             r = data.get("rolling", {})
             w = data.get("weekly", {})
             m = data.get("monthly", {})
-            limits = data.get("limits", {})
             return GoUsageData(
                 five_hour_pct=_safe_pct(r),
                 five_hour_reset_seconds=_safe_reset(r),
